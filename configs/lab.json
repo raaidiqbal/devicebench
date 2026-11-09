@@ -1,0 +1,51 @@
+{
+  "devices": [
+    {
+      "id": "iphone-16-pro",
+      "name": "iPhone 16 Pro simulator",
+      "platform": "iOS Simulator",
+      "os": "latest",
+      "model": "iPhone 16 Pro",
+      "capabilities": ["battery", "display", "network", "sensor"]
+    },
+    {
+      "id": "ipad-pro-13",
+      "name": "iPad Pro 13-inch simulator",
+      "platform": "iOS Simulator",
+      "os": "latest",
+      "model": "iPad Pro 13-inch (M4)",
+      "capabilities": ["battery", "display", "network", "sensor"]
+    }
+  ],
+  "suites": [
+    {
+      "name": "diagnostic-core",
+      "target": "DiagnosticCoreTests",
+      "platforms": ["iOS Simulator"],
+      "fault_modes": ["none"],
+      "retries": 0
+    },
+    {
+      "name": "ui-healthy-repair",
+      "target": "DeviceBenchUITests/DeviceBenchUITests/testHealthyDiagnosticAndRepairWorkflow",
+      "platforms": ["iOS Simulator"],
+      "fault_modes": ["none"],
+      "retries": 1
+    },
+    {
+      "name": "ui-sensor-fault",
+      "target": "DeviceBenchUITests/DeviceBenchUITests/testSensorFaultReportsStableCode",
+      "platforms": ["iOS Simulator"],
+      "fault_modes": ["sensor_unavailable"],
+      "retries": 1
+    },
+    {
+      "name": "ui-timeout-fault",
+      "target": "DeviceBenchUITests/DeviceBenchUITests/testTimeoutReportsStableCode",
+      "platforms": ["iOS Simulator"],
+      "fault_modes": ["timeout"],
+      "retries": 1
+    }
+  ]
+}
+
