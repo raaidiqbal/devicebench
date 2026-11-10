@@ -8,6 +8,10 @@ from devicebench.triage import classify_failure
     ("log", "category"),
     [
         ("xcodebuild: error: Unable to boot simulator", FailureCategory.INFRASTRUCTURE),
+        (
+            "App installation failed: Unable to Install DeviceBench. Info.plist missing",
+            FailureCategory.INFRASTRUCTURE,
+        ),
         ("The application process crashed after launch", FailureCategory.APPLICATION_CRASH),
         ("Asynchronous wait failed: timed out after 10 seconds", FailureCategory.TIMEOUT),
         ("XCTAssertEqual failed - expected PASS", FailureCategory.ASSERTION),
