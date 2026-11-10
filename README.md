@@ -54,10 +54,10 @@ Running the Swift and UI tests requires macOS with Xcode and XcodeGen:
 ```bash
 brew install xcodegen
 xcodegen generate --spec spec.yml
-python -m devicebench run --config configs/lab.ci.json --results reports --attempt-timeout 240
+python -m devicebench run --config configs/lab.ci.json --results reports --attempt-timeout 600
 ```
 
-The same flow runs automatically on GitHub's `macos-15` hosted runner. Simulator tests do not require code signing.
+The same flow runs automatically on GitHub's `macos-15` hosted runner. CI builds the test products once and runs each isolated lab job with `test-without-building`; simulator tests do not require code signing.
 
 ## Diagnostic contracts
 

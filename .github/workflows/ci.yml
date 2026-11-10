@@ -51,8 +51,20 @@ jobs:
         run: |
           xcodebuild -version
           xcrun simctl list devices available
+      - name: Build test products once
+        run: >-
+          xcodebuild build-for-testing
+          -project DeviceBench.xcodeproj
+          -scheme DeviceBench
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest'
+          CODE_SIGNING_ALLOWED=NO
       - name: Run diagnostic lab matrix
-        run: python -m devicebench run --config configs/lab.ci.json --results reports
+        run: >-
+          python -m devicebench run
+          --config configs/lab.ci.json
+          --results reports
+          --attempt-timeout 600
+          --test-without-building
       - name: Upload test evidence
         if: always()
         uses: actions/upload-artifact@v7

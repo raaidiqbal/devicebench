@@ -27,7 +27,7 @@ It also enforces a per-attempt process deadline. A wedged `xcodebuild` invocatio
 
 ## CI evidence
 
-The Linux job validates the controller independently. The macOS job generates the Xcode project from `spec.yml`, records the selected Xcode and simulator inventory, executes the CI matrix, and uploads logs plus `.xcresult` bundles even when a test fails.
+The Linux job validates the controller independently. The macOS job generates the Xcode project from `spec.yml`, records the selected Xcode and simulator inventory, builds test products once, executes each CI matrix entry with `test-without-building`, and uploads logs plus `.xcresult` bundles even when a test fails.
 
 ## Failure taxonomy
 

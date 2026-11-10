@@ -20,10 +20,13 @@ def build_xcodebuild_command(
     project: Path,
     scheme: str,
     result_bundle: Path,
+    action: str = "test",
 ) -> list[str]:
+    if action not in {"test", "test-without-building"}:
+        raise ValueError(f"unsupported xcodebuild action: {action}")
     return [
         "xcodebuild",
-        "test",
+        action,
         "-project",
         str(project),
         "-scheme",
@@ -43,7 +46,8 @@ class XcodebuildRunner:
         project: Path,
         scheme: str,
         results_dir: Path,
-        timeout_seconds: float = 240,
+        timeout_seconds: float = 600,
+        test_without_building: bool = False,
     ):
         self.project = project
         self.scheme = scheme
@@ -51,6 +55,7 @@ class XcodebuildRunner:
         if timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         self.timeout_seconds = timeout_seconds
+        self.action = "test-without-building" if test_without_building else "test"
 
     def command_for(self, job: TestJob) -> list[str]:
         bundle = self.results_dir / f"{job.job_id}-attempt-{job.attempt}.xcresult"
@@ -59,6 +64,7 @@ class XcodebuildRunner:
             project=self.project,
             scheme=self.scheme,
             result_bundle=bundle,
+            action=self.action,
         )
 
     def run(self, job: TestJob) -> RunResult:

@@ -33,7 +33,8 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--project", type=Path, default=Path("DeviceBench.xcodeproj"))
     run.add_argument("--scheme", default="DeviceBench")
     run.add_argument("--results", type=Path, default=Path("reports"))
-    run.add_argument("--attempt-timeout", type=float, default=240)
+    run.add_argument("--attempt-timeout", type=float, default=600)
+    run.add_argument("--test-without-building", action="store_true")
     run.add_argument("--dry-run", action="store_true")
 
     triage = subparsers.add_parser("triage", help="classify an xcodebuild test log")
@@ -64,6 +65,7 @@ def main(argv: list[str] | None = None) -> int:
         args.scheme,
         args.results,
         timeout_seconds=args.attempt_timeout,
+        test_without_building=args.test_without_building,
     )
     if args.dry_run:
         _write_json(

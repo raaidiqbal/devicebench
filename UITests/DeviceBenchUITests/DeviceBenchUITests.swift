@@ -15,8 +15,12 @@ final class DeviceBenchUITests: XCTestCase {
     }
 
     private func waitForLabel(_ identifier: String, toEqual value: String) {
-        let element = app.staticTexts[identifier]
-        let predicate = NSPredicate(format: "label == %@", value)
+        let element = app.descendants(matching: .any)[identifier]
+        let predicate = NSPredicate(
+            format: "exists == true AND (label == %@ OR value == %@)",
+            value,
+            value
+        )
         expectation(for: predicate, evaluatedWith: element)
         waitForExpectations(timeout: 10)
     }

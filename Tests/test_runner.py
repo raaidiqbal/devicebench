@@ -26,6 +26,19 @@ def test_xcode_command_is_argument_safe_and_scoped() -> None:
     assert command[-1] == "CODE_SIGNING_ALLOWED=NO"
 
 
+def test_xcode_command_can_reuse_prebuilt_test_products() -> None:
+    job = build_plan(load_config(ROOT / "configs" / "lab.ci.json"))[0]
+    command = build_xcodebuild_command(
+        job,
+        project=Path("DeviceBench.xcodeproj"),
+        scheme="DeviceBench",
+        result_bundle=Path("reports/job.xcresult"),
+        action="test-without-building",
+    )
+
+    assert command[0:2] == ["xcodebuild", "test-without-building"]
+
+
 def test_xcode_runner_converts_process_deadline_to_infrastructure_failure(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
