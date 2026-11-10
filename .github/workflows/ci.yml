@@ -65,6 +65,16 @@ jobs:
           --results reports
           --attempt-timeout 600
           --test-without-building
+      - name: Publish diagnostic report
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f reports/report.md ]]; then
+            cat reports/report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "# DeviceBench diagnostic lab report" >> "$GITHUB_STEP_SUMMARY"
+            echo "No report was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
       - name: Upload test evidence
         if: always()
         uses: actions/upload-artifact@v7

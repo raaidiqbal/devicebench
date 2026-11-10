@@ -1,14 +1,27 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from .models import FailureCategory, RunResult, RunStatus, TestJob
 from .planner import DevicePool
 from .runner import JobRunner
 
 
 class LabCoordinator:
-    def __init__(self, pool: DevicePool, runner: JobRunner):
+    def __init__(
+        self,
+        pool: DevicePool,
+        runner: JobRunner,
+        on_result: Callable[[RunResult], None] | None = None,
+    ):
         self.pool = pool
         self.runner = runner
+        self.on_result = on_result
+
+    def _record(self, results: list[RunResult], result: RunResult) -> None:
+        results.append(result)
+        if self.on_result:
+            self.on_result(result)
 
     def execute(self, jobs: tuple[TestJob, ...]) -> tuple[RunResult, ...]:
         results: list[RunResult] = []
@@ -20,14 +33,15 @@ class LabCoordinator:
                 try:
                     self.pool.acquire(device_id)
                 except RuntimeError as exc:
-                    results.append(
+                    self._record(
+                        results,
                         RunResult(
                             job=job,
                             status=RunStatus.SKIPPED,
                             duration_seconds=0,
                             category=FailureCategory.INFRASTRUCTURE,
                             evidence=(str(exc),),
-                        )
+                        ),
                     )
                     break
 
@@ -41,7 +55,7 @@ class LabCoordinator:
                         category=FailureCategory.INFRASTRUCTURE,
                         evidence=(f"runner raised {type(exc).__name__}: {exc}",),
                     )
-                results.append(result)
+                self._record(results, result)
 
                 if result.passed:
                     self.pool.release(device_id)

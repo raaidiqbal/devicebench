@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .orchestrator import LabCoordinator
 from .planner import DevicePool, build_plan, load_config
+from .report import write_markdown_report
 from .runner import XcodebuildRunner
 from .triage import classify_failure
 
@@ -40,6 +41,21 @@ def _parser() -> argparse.ArgumentParser:
     triage = subparsers.add_parser("triage", help="classify an xcodebuild test log")
     triage.add_argument("--log", type=Path, required=True)
     return parser
+
+
+def _print_progress(result: object) -> None:
+    from .models import RunResult
+
+    if not isinstance(result, RunResult):
+        return
+    category = result.category.value if result.category else "none"
+    print(
+        "[devicebench] "
+        f"job={result.job.job_id} attempt={result.job.attempt} "
+        f"status={result.status.value} category={category} "
+        f"duration={result.duration_seconds:.1f}s",
+        flush=True,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,9 +93,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
-    coordinator = LabCoordinator(DevicePool(config.devices), runner)
+    coordinator = LabCoordinator(DevicePool(config.devices), runner, on_result=_print_progress)
     results = coordinator.execute(jobs)
     summary_path = args.results / "summary.json"
     _write_json([result.to_dict() for result in results], summary_path)
+    report_path = args.results / "report.md"
+    write_markdown_report(results, report_path)
+    print(f"wrote {report_path}")
     return 0 if all(result.passed for result in results) else 1
 

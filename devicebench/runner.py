@@ -8,10 +8,27 @@ from typing import Protocol
 
 from .models import FailureCategory, RunResult, RunStatus, TestJob
 from .triage import classify_failure
+from .xcresult import read_summary
 
 
 class JobRunner(Protocol):
     def run(self, job: TestJob) -> RunResult: ...
+
+
+def _result_bundle_summary(bundle: Path) -> dict[str, object]:
+    if not bundle.exists():
+        return {}
+    try:
+        summary = read_summary(bundle)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return {}
+    return {
+        "passed": summary.passed,
+        "failed": summary.failed,
+        "skipped": summary.skipped,
+        "total": summary.total,
+        "duration_seconds": round(summary.duration_seconds, 3),
+    }
 
 
 def build_xcodebuild_command(
@@ -117,6 +134,7 @@ class XcodebuildRunner:
         duration = time.monotonic() - started
         combined_log = f"{completed.stdout}\n{completed.stderr}".strip()
         log_path.write_text(combined_log, encoding="utf-8")
+        result_summary = _result_bundle_summary(bundle)
 
         if completed.returncode == 0:
             return RunResult(
@@ -125,6 +143,7 @@ class XcodebuildRunner:
                 duration_seconds=duration,
                 log_path=log_path,
                 result_bundle=bundle if bundle.exists() else None,
+                summary=result_summary,
             )
 
         decision = classify_failure(combined_log)
@@ -136,5 +155,6 @@ class XcodebuildRunner:
             evidence=decision.evidence,
             log_path=log_path,
             result_bundle=bundle if bundle.exists() else None,
+            summary=result_summary,
         )
 

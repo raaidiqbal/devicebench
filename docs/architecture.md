@@ -17,6 +17,8 @@ It also enforces a per-attempt process deadline. A wedged `xcodebuild` invocatio
 
 `xcresult.py` normalizes modern and legacy summary field names. This keeps reporting logic separate from the execution path and makes captured result payloads independently testable.
 
+`report.py` reduces attempt-level results to final job outcomes and renders a deterministic Markdown report. The report is a presentation layer only; `summary.json`, `xcodebuild` exit status, and the retained result bundles remain authoritative.
+
 ## Swift test fixture
 
 `DiagnosticCore` defines diagnostic kinds, stable result codes, deterministic fault modes, and the repair workflow state machine. It contains no UI dependency and is covered by XCTest.

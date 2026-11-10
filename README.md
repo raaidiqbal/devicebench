@@ -1,5 +1,7 @@
 # DeviceBench
 
+[![CI](https://github.com/raaidiqbal/devicebench/actions/workflows/ci.yml/badge.svg)](https://github.com/raaidiqbal/devicebench/actions/workflows/ci.yml)
+
 DeviceBench is a simulator-first diagnostic automation lab for testing device health and repair workflows. A Swift fixture app exposes deterministic diagnostic behavior; XCTest and XCUITest validate it; and a Python controller plans simulator matrices, leases devices, retries infrastructure failures, quarantines unhealthy workers, and preserves test evidence.
 
 The project is deliberately built as an automation system rather than a collection of UI tests. It models the operational problems behind a shared device lab: exclusive access, repeatable fault injection, failure classification, test artifacts, and CI-friendly execution.
@@ -12,6 +14,7 @@ The project is deliberately built as an automation system rather than a collecti
 - `xcodebuild`, `xcrun`, XcodeGen, and `.xcresult` handling
 - Simulator leasing, retry policy, and quarantine state
 - Hard per-attempt deadlines so wedged simulator processes cannot stall the lab
+- Normalized XCTest counts and a Markdown diagnostic report in every CI summary
 - Deterministic triage of assertion, crash, timeout, and infrastructure failures
 - GitHub Actions on a macOS runner with retained logs and result bundles
 - Stable accessibility identifiers and fault-injected test design
@@ -81,6 +84,11 @@ Every test job is bound to one simulator record and one exact XCTest identifier.
 5. Quarantines a simulator after its retry budget is exhausted.
 6. Terminates an attempt that exceeds its configured execution deadline.
 7. Does not retry product assertions, because repeating a deterministic failure would hide the defect.
+
+Every completed attempt prints a concise progress line. At the end of a run,
+`reports/summary.json` remains the machine-readable source of truth and
+`reports/report.md` provides a human-readable view that GitHub Actions publishes
+in the job summary.
 
 ## Current boundary
 

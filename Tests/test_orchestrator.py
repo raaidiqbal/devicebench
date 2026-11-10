@@ -72,3 +72,22 @@ def test_assertion_failure_does_not_retry_or_quarantine() -> None:
     assert len(results) == 1
     assert pool.snapshot()[job.device.identifier] == "available"
 
+
+def test_coordinator_emits_every_attempt_to_progress_callback() -> None:
+    config, job = _retryable_job()
+    runner = FakeRunner(
+        [
+            (RunStatus.FAILED, FailureCategory.INFRASTRUCTURE),
+            (RunStatus.PASSED, None),
+        ]
+    )
+    observed: list[RunResult] = []
+
+    results = LabCoordinator(
+        DevicePool(config.devices),
+        runner,
+        on_result=observed.append,
+    ).execute((job,))
+
+    assert observed == list(results)
+
