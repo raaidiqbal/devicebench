@@ -58,6 +58,7 @@ def read_summary(result_bundle: Path) -> TestSummary:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        timeout=30,
     )
     payload = json.loads(completed.stdout)
     if not isinstance(payload, dict):

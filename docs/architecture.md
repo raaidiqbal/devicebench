@@ -16,6 +16,7 @@ It also enforces a per-attempt process deadline. A wedged `xcodebuild` invocatio
 `triage.py` classifies failures using ordered, deterministic rules and returns the exact matching log lines as evidence. The classifier does not decide whether a test passed; the `xcodebuild` exit status remains authoritative.
 
 `xcresult.py` normalizes modern and legacy summary field names. This keeps reporting logic separate from the execution path and makes captured result payloads independently testable.
+Result extraction has its own short deadline; a slow or malformed result bundle cannot block the lab, and the raw bundle remains available for later inspection.
 
 `report.py` reduces attempt-level results to final job outcomes and renders a deterministic Markdown report. The report is a presentation layer only; `summary.json`, `xcodebuild` exit status, and the retained result bundles remain authoritative.
 
