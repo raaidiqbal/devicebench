@@ -11,6 +11,7 @@ DeviceBench separates test intent from execution infrastructure. Test scenarios 
 `orchestrator.py` applies the retry policy. Only infrastructure failures are retried. Assertion, timeout, and application failures are treated as product or test defects and immediately returned. Repeated infrastructure failure consumes the retry budget and quarantines the device record.
 
 `runner.py` constructs `xcodebuild` arguments as a list rather than a shell string, which avoids quoting and command-injection problems. Each attempt receives a unique log and `.xcresult` path.
+It also enforces a per-attempt process deadline. A wedged `xcodebuild` invocation is recorded as an infrastructure failure so the coordinator can retry it and quarantine the simulator if recovery fails.
 
 `triage.py` classifies failures using ordered, deterministic rules and returns the exact matching log lines as evidence. The classifier does not decide whether a test passed; the `xcodebuild` exit status remains authoritative.
 

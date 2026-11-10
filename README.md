@@ -11,6 +11,7 @@ The project is deliberately built as an automation system rather than a collecti
 - Python test orchestration and helper tooling
 - `xcodebuild`, `xcrun`, XcodeGen, and `.xcresult` handling
 - Simulator leasing, retry policy, and quarantine state
+- Hard per-attempt deadlines so wedged simulator processes cannot stall the lab
 - Deterministic triage of assertion, crash, timeout, and infrastructure failures
 - GitHub Actions on a macOS runner with retained logs and result bundles
 - Stable accessibility identifiers and fault-injected test design
@@ -53,7 +54,7 @@ Running the Swift and UI tests requires macOS with Xcode and XcodeGen:
 ```bash
 brew install xcodegen
 xcodegen generate --spec spec.yml
-python -m devicebench run --config configs/lab.ci.json --results reports
+python -m devicebench run --config configs/lab.ci.json --results reports --attempt-timeout 240
 ```
 
 The same flow runs automatically on GitHub's `macos-15` hosted runner. Simulator tests do not require code signing.
@@ -78,7 +79,8 @@ Every test job is bound to one simulator record and one exact XCTest identifier.
 3. Preserves the log and result bundle.
 4. Retries infrastructure failures only.
 5. Quarantines a simulator after its retry budget is exhausted.
-6. Does not retry product assertions, because repeating a deterministic failure would hide the defect.
+6. Terminates an attempt that exceeds its configured execution deadline.
+7. Does not retry product assertions, because repeating a deterministic failure would hide the defect.
 
 ## Current boundary
 

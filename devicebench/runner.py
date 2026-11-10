@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from typing import Protocol
 
-from .models import RunResult, RunStatus, TestJob
+from .models import FailureCategory, RunResult, RunStatus, TestJob
 from .triage import classify_failure
 
 
@@ -38,10 +38,19 @@ def build_xcodebuild_command(
 
 
 class XcodebuildRunner:
-    def __init__(self, project: Path, scheme: str, results_dir: Path):
+    def __init__(
+        self,
+        project: Path,
+        scheme: str,
+        results_dir: Path,
+        timeout_seconds: float = 240,
+    ):
         self.project = project
         self.scheme = scheme
         self.results_dir = results_dir
+        if timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
+        self.timeout_seconds = timeout_seconds
 
     def command_for(self, job: TestJob) -> list[str]:
         bundle = self.results_dir / f"{job.job_id}-attempt-{job.attempt}.xcresult"
@@ -66,15 +75,39 @@ class XcodebuildRunner:
         )
 
         started = time.monotonic()
-        completed = subprocess.run(
-            command,
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            env=environment,
-        )
+        try:
+            completed = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=environment,
+                timeout=self.timeout_seconds,
+            )
+        except subprocess.TimeoutExpired as exc:
+            duration = time.monotonic() - started
+            partial_stdout = exc.stdout or ""
+            partial_stderr = exc.stderr or ""
+            if isinstance(partial_stdout, bytes):
+                partial_stdout = partial_stdout.decode("utf-8", errors="replace")
+            if isinstance(partial_stderr, bytes):
+                partial_stderr = partial_stderr.decode("utf-8", errors="replace")
+            message = (
+                f"xcodebuild exceeded the {self.timeout_seconds:g}-second attempt deadline"
+            )
+            combined_log = f"{partial_stdout}\n{partial_stderr}\n{message}".strip()
+            log_path.write_text(combined_log, encoding="utf-8")
+            return RunResult(
+                job=job,
+                status=RunStatus.FAILED,
+                duration_seconds=duration,
+                category=FailureCategory.INFRASTRUCTURE,
+                evidence=(message,),
+                log_path=log_path,
+                result_bundle=bundle if bundle.exists() else None,
+            )
         duration = time.monotonic() - started
         combined_log = f"{completed.stdout}\n{completed.stderr}".strip()
         log_path.write_text(combined_log, encoding="utf-8")
