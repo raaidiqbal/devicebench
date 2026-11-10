@@ -25,10 +25,14 @@ struct ContentView: View {
                     LabeledContent("Status") {
                         Text(viewModel.statusText)
                             .accessibilityIdentifier("statusLabel")
+                            .accessibilityLabel(viewModel.statusText)
+                            .accessibilityValue(viewModel.statusText)
                     }
                     LabeledContent("Code") {
                         Text(viewModel.resultCode)
                             .accessibilityIdentifier("resultCodeLabel")
+                            .accessibilityLabel(viewModel.resultCode)
+                            .accessibilityValue(viewModel.resultCode)
                     }
                     if let message = viewModel.result?.message {
                         Text(message)
@@ -39,6 +43,8 @@ struct ContentView: View {
                 Section("Repair workflow") {
                     Text(viewModel.repairState.rawValue.uppercased())
                         .accessibilityIdentifier("repairStateLabel")
+                        .accessibilityLabel(viewModel.repairState.rawValue.uppercased())
+                        .accessibilityValue(viewModel.repairState.rawValue.uppercased())
                     Button("Authorize repair") {
                         viewModel.authorizeRepair()
                     }

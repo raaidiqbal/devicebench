@@ -47,6 +47,7 @@ _RULES: tuple[tuple[FailureCategory, tuple[re.Pattern[str], ...]], ...] = (
             re.compile(pattern, re.IGNORECASE)
             for pattern in (
                 r"timed out",
+                r"exceeded timeout",
                 r"timeout waiting",
                 r"exceeded.*time limit",
                 r"failed to wait for",

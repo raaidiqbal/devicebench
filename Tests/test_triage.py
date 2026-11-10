@@ -14,6 +14,7 @@ from devicebench.triage import classify_failure
         ),
         ("The application process crashed after launch", FailureCategory.APPLICATION_CRASH),
         ("Asynchronous wait failed: timed out after 10 seconds", FailureCategory.TIMEOUT),
+        ("Asynchronous wait failed: Exceeded timeout of 10 seconds", FailureCategory.TIMEOUT),
         ("XCTAssertEqual failed - expected PASS", FailureCategory.ASSERTION),
         ("something novel happened", FailureCategory.UNKNOWN),
     ],
