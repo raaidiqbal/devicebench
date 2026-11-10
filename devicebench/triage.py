@@ -22,6 +22,9 @@ _RULES: tuple[tuple[FailureCategory, tuple[re.Pattern[str], ...]], ...] = (
                 r"failed to create simulator",
                 r"device is unavailable",
                 r"core simulator service.*(?:failed|invalid)",
+                r"app installation failed",
+                r"unable to install",
+                r"info\.plist missing",
                 r"xcodebuild: error:",
             )
         ),
